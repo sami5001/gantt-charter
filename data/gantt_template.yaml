@@ -1,0 +1,152 @@
+# Gantt Chart Data Template
+# Copy this file to 'gantt_data.yaml' and customize with your project data
+# The 'gantt_data.yaml' file is gitignored for privacy
+
+# Project metadata
+project:
+  title: "Project Timeline"
+  description: "Project description here"
+  start_date: "2024-01-01"  # Optional: Project start date for reference
+  end_date: "2024-12-31"    # Optional: Project end date for reference
+
+# Chart configuration
+config:
+  palette: "professional"   # Options: professional, traditional, corporate, contemporary, vibrant, primary
+  add_branding: false       # Add Oxford watermark
+  show_dependencies: false  # Show task dependencies (if dependencies are defined)
+  height: 600              # Chart height in pixels
+  width: 1200              # Chart width for export
+
+# Tasks list
+# Required fields: name, start, finish
+# Optional fields: resource, phase, dependencies, color, description
+tasks:
+  - name: "Project Initiation"
+    start: "2024-01-01"
+    finish: "2024-01-14"
+    resource: "Project Manager"
+    phase: "Initiation"
+    description: "Define project scope and objectives"
+
+  - name: "Requirements Gathering"
+    start: "2024-01-15"
+    finish: "2024-02-14"
+    resource: "Business Analyst"
+    phase: "Planning"
+    description: "Collect and document requirements"
+    dependencies: ["Project Initiation"]  # Optional: List of task names this depends on
+
+  - name: "System Design"
+    start: "2024-02-15"
+    finish: "2024-03-14"
+    resource: "System Architect"
+    phase: "Design"
+    description: "Create system architecture and design documents"
+    dependencies: ["Requirements Gathering"]
+
+  - name: "Development Sprint 1"
+    start: "2024-03-15"
+    finish: "2024-04-14"
+    resource: "Development Team"
+    phase: "Development"
+    description: "Implement core features"
+    dependencies: ["System Design"]
+
+  - name: "Development Sprint 2"
+    start: "2024-04-15"
+    finish: "2024-05-14"
+    resource: "Development Team"
+    phase: "Development"
+    description: "Implement additional features"
+    dependencies: ["Development Sprint 1"]
+
+  - name: "Testing & QA"
+    start: "2024-05-01"
+    finish: "2024-05-31"
+    resource: "QA Team"
+    phase: "Testing"
+    description: "Comprehensive testing and bug fixes"
+    dependencies: ["Development Sprint 1"]
+
+  - name: "User Training"
+    start: "2024-05-15"
+    finish: "2024-06-07"
+    resource: "Training Team"
+    phase: "Deployment"
+    description: "Train end users on the system"
+    dependencies: ["Testing & QA"]
+
+  - name: "Go Live"
+    start: "2024-06-08"
+    finish: "2024-06-14"
+    resource: "Operations Team"
+    phase: "Deployment"
+    description: "System deployment and go-live"
+    dependencies: ["User Training", "Testing & QA"]
+
+  - name: "Post-Launch Support"
+    start: "2024-06-15"
+    finish: "2024-07-31"
+    resource: "Support Team"
+    phase: "Maintenance"
+    description: "Provide support and address issues"
+    dependencies: ["Go Live"]
+
+# Resources (optional - for resource planning views)
+resources:
+  - name: "Project Manager"
+    role: "Management"
+    allocation: 100  # Percentage allocation to project
+
+  - name: "Business Analyst"
+    role: "Analysis"
+    allocation: 100
+
+  - name: "System Architect"
+    role: "Design"
+    allocation: 100
+
+  - name: "Development Team"
+    role: "Development"
+    allocation: 100
+    team_size: 5  # Optional: Number of people in team
+
+  - name: "QA Team"
+    role: "Testing"
+    allocation: 100
+    team_size: 3
+
+  - name: "Training Team"
+    role: "Training"
+    allocation: 50
+
+  - name: "Operations Team"
+    role: "Operations"
+    allocation: 100
+
+  - name: "Support Team"
+    role: "Support"
+    allocation: 100
+    team_size: 2
+
+# Milestones (optional - for highlighting key dates)
+milestones:
+  - name: "Project Kickoff"
+    date: "2024-01-01"
+    description: "Project officially starts"
+
+  - name: "Design Complete"
+    date: "2024-03-14"
+    description: "System design finalized"
+
+  - name: "Development Complete"
+    date: "2024-05-14"
+    description: "All development work finished"
+
+  - name: "Go Live"
+    date: "2024-06-08"
+    description: "System goes live to production"
+
+  - name: "Project Closure"
+    date: "2024-07-31"
+    description: "Project officially closes"

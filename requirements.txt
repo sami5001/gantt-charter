@@ -1,0 +1,15 @@
+# Core dependencies
+plotly>=6.1.1
+pandas>=1.3.0
+numpy>=1.21.0
+pyyaml>=6.0  # For YAML data file support
+
+# Oxford Plotly Theme (local installation)
+# Install with: pip install -e /Users/sami/PycharmProjects/Oxford-Plotly-Theme
+
+# Export capabilities
+kaleido>=0.2.0  # For high-quality PNG, PDF, SVG exports
+
+# Optional but recommended
+python-dateutil>=2.8.0  # Better date parsing
+openpyxl>=3.0.0  # Excel file support for data import
