@@ -10,15 +10,24 @@ Professional Gantt chart generator with Oxford Plotly Theme integration for crea
 **Author**: Sami Adnan
 **Affiliation**: University of Oxford
 
+## Web App
+
+Gantt Charter also ships as a browser app at **https://sami5001.github.io/gantt-charter/**: import a CSV or enter tasks manually, pick a palette, choose A4 or Letter in portrait or landscape, and export a vector PDF, SVG or PNG. Everything runs client-side; no data leaves the browser. The source lives in [`site/`](site/) and deploys to GitHub Pages automatically on push to `main`.
+
+The web app and the Python CLI share the same CSV template and YAML schema, so files round-trip freely between them.
+
 ## Features
 
 - **YAML-Based Configuration**: Define your project timeline in simple YAML files
-- **Professional Styling**: Integrated with Oxford Plotly Theme for branded, consistent visualizations
+- **Professional Styling**: Built-in Oxford Plotly Theme for branded, consistent visualizations
 - **Multiple Chart Types**: Standard Gantt charts, resource timelines, and multi-project views
 - **High-Quality Export**: Export to PNG, PDF, SVG, or interactive HTML
 - **Customizable Palettes**: Choose from 12 Oxford color palettes for different contexts
 - **Privacy-Focused**: Keep your project data private with gitignored YAML files
 - **Easy to Use**: Simple Python API with sensible defaults
+- **Dynamic Layout**: Automatic margin adjustment for long task names
+- **Milestone Support**: PHC-colored milestone markers with vertical guide lines
+- **Self-Contained**: Oxford theme included - no external dependencies
 
 ## Installation
 
@@ -39,10 +48,7 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-### 4. Install Oxford Plotly Theme
-```bash
-pip install -e /Users/sami/PycharmProjects/Oxford-Plotly-Theme
-```
+The Oxford Plotly Theme is now included in the `utils` folder, so no additional installation is needed!
 
 ## Quick Start
 
@@ -122,6 +128,19 @@ tasks:
 
 See `data/gantt_template.yaml` for a complete example with all available options.
 
+## CSV Data Format
+
+CSV files use the same template as the web app. `Task` and `Start` are required; header names are case-insensitive and common aliases (Name, End, Assignee, Group, ...) are accepted.
+
+```csv
+Type,Task,Start,Finish,Resource,Phase,Description
+task,Literature review,2026-01-05,2026-02-13,Researcher,Preparation,Survey existing work
+task,Data collection,2026-02-16,2026-04-10,Research assistant,Fieldwork,
+milestone,Ethics approval,2026-02-02,,,,Approval received
+```
+
+Rows with `Type` set to `milestone` become milestone markers; their date comes from the `Date` or `Start` column.
+
 ## Command Line Interface
 
 Gantt Charter includes a powerful CLI for generating charts directly from the terminal.
@@ -134,6 +153,12 @@ python cli.py
 
 # Use specific YAML file
 python cli.py -i project.yaml
+
+# Use a CSV file (same template as the web app)
+python cli.py -i project.csv
+
+# Print-ready A4 portrait PDF
+python cli.py -f pdf --paper a4 --orientation portrait
 
 # Export as PNG with custom dimensions
 python cli.py -f png --width 1400 --height 800
@@ -155,12 +180,14 @@ python cli.py --show
 
 | Option | Description | Default |
 |--------|-------------|---------|
-| `-i, --input` | Path to YAML data file | `data/gantt_data.yaml` |
+| `-i, --input` | Path to YAML or CSV data file | `data/gantt_data.yaml` |
 | `-o, --output` | Output filename (without extension) | Project title from YAML |
 | `-d, --output-dir` | Output directory | `output` |
 | `-f, --format` | Export format: png, svg, pdf, html | `html` |
-| `--width` | Chart width in pixels | `1200` |
-| `--height` | Chart height in pixels | `600` |
+| `--paper` | Page preset: a4, letter | None |
+| `--orientation` | Page orientation: landscape, portrait | `landscape` with `--paper` |
+| `--width` | Chart width in pixels (overrides preset) | `1200` |
+| `--height` | Chart height in pixels (overrides preset) | `600` |
 | `--scale` | Quality scale for raster formats | `3` |
 | `-p, --palette` | Oxford color palette | `professional` |
 | `--title` | Override chart title | From YAML |
@@ -255,7 +282,12 @@ charter.save_chart(
 
 ## Contributing
 
-We welcome contributions to Gantt Charter! Please follow these guidelines to ensure smooth collaboration.
+We welcome contributions to Gantt Charter! There are two places to contribute:
+
+- **Python package and CLI**: everything outside `site/`. Run `pytest` before opening a PR.
+- **Web app**: lives in [`site/`](site/). Develop with `cd site && npm install && npm run dev`; it deploys to GitHub Pages automatically when merged to `main`.
+
+Not sure where to start? [Open an issue](https://github.com/sami5001/gantt-charter/issues) to report a bug or propose a feature, or browse existing issues for something to pick up.
 
 ### How to Contribute
 
@@ -294,14 +326,11 @@ We welcome contributions to Gantt Charter! Please follow these guidelines to ens
 
 Before submitting a PR:
 ```bash
-# Test the basic functionality
-python test_setup.py
+# Run the test suite (CSV/YAML loaders, chart generation, CLI)
+pytest
 
-# Test CLI
-python cli.py --help
-
-# Test with your YAML data
-python cli.py -f png --verbose
+# Web app: type-check and build
+cd site && npx astro check && npm run build
 ```
 
 ### Reporting Issues

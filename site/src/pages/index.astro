@@ -1,0 +1,17 @@
+---
+import Layout from '../layouts/Layout.astro';
+import App from '../components/App';
+---
+
+<Layout
+  title="Gantt Charter: print-quality project timelines"
+  description="Create publication-quality Gantt charts in your browser. Import CSV or enter tasks manually, then export vector PDF, SVG or PNG in portrait or landscape. No account, no upload: everything stays on your device."
+>
+  <App client:only="react" />
+  <noscript>
+    <div style="padding: 4rem 2rem; text-align: center; font-family: system-ui;">
+      <h1>Gantt Charter</h1>
+      <p>This tool builds Gantt charts entirely in your browser and needs JavaScript to run.</p>
+    </div>
+  </noscript>
+</Layout>

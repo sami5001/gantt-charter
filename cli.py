@@ -1,8 +1,15 @@
 #!/usr/bin/env python3
 """
 Gantt Charter CLI - Command-line interface for generating Gantt charts
+
+A professional command-line tool for creating publication-quality Gantt charts
+with Oxford University theming. Supports multiple export formats and customization
+options.
+
 Author: Sami Adnan
 Affiliation: University of Oxford
+License: MIT
+Year: 2024
 """
 
 import argparse
@@ -12,9 +19,19 @@ from pathlib import Path
 from src.gantt_charter import (
     create_gantt_from_yaml,
     GanttCharter,
+    load_data_from_csv,
     load_data_from_yaml,
     yaml_to_dataframe
 )
+
+# Page presets in pixels at 96 dpi; the --scale flag multiplies resolution
+# on export without changing the layout. Matches the web app's geometry.
+PAPER_SIZES = {
+    ('a4', 'landscape'): (1123, 794),
+    ('a4', 'portrait'): (794, 1123),
+    ('letter', 'landscape'): (1056, 816),
+    ('letter', 'portrait'): (816, 1056),
+}
 
 
 def main():
@@ -26,8 +43,10 @@ def main():
 Examples:
   gantt-charter                           # Generate chart using default data file
   gantt-charter -i project.yaml           # Use specific YAML file
+  gantt-charter -i project.csv            # Use a CSV file (same template as the web app)
   gantt-charter -f png                    # Export as PNG
   gantt-charter -f pdf -o report          # Export as PDF with custom name
+  gantt-charter -f pdf --paper a4 --orientation portrait   # Print-ready A4 portrait
   gantt-charter --palette corporate       # Use corporate color palette
   gantt-charter --no-branding             # Disable Oxford branding
   gantt-charter --show                    # Display interactive chart
@@ -68,15 +87,31 @@ Examples:
     parser.add_argument(
         "--width",
         type=int,
-        default=1200,
-        help="Chart width in pixels (default: 1200)"
+        default=None,
+        help="Chart width in pixels (overrides --paper/--orientation; default: 1200)"
     )
 
     parser.add_argument(
         "--height",
         type=int,
-        default=600,
-        help="Chart height in pixels (default: 600)"
+        default=None,
+        help="Chart height in pixels (overrides --paper/--orientation; default: 600)"
+    )
+
+    parser.add_argument(
+        "--paper",
+        type=str,
+        choices=["a4", "letter"],
+        default=None,
+        help="Page size preset for print-ready output"
+    )
+
+    parser.add_argument(
+        "--orientation",
+        type=str,
+        choices=["landscape", "portrait"],
+        default=None,
+        help="Page orientation (default: landscape when --paper is given)"
     )
 
     parser.add_argument(
@@ -138,21 +173,23 @@ Examples:
     args = parser.parse_args()
 
     try:
-        # Load YAML data
+        # Load data: CSV or YAML, decided by file extension
         if args.verbose:
             print(f"Loading data from: {args.input or 'default location'}")
 
-        yaml_data = load_data_from_yaml(args.input)
-
-        # Extract configuration
-        project = yaml_data.get('project', {})
-        config = yaml_data.get('config', {})
-
-        # Convert to DataFrame
-        df = yaml_to_dataframe(yaml_data)
+        if args.input and args.input.lower().endswith('.csv'):
+            df, milestones = load_data_from_csv(args.input)
+            project = {'title': Path(args.input).stem.replace('_', ' ').title()}
+            config = {}
+        else:
+            yaml_data = load_data_from_yaml(args.input)
+            project = yaml_data.get('project', {})
+            config = yaml_data.get('config', {})
+            milestones = yaml_data.get('milestones', [])
+            df = yaml_to_dataframe(yaml_data)
 
         if args.verbose:
-            print(f"Loaded {len(df)} tasks from YAML")
+            print(f"Loaded {len(df)} tasks")
 
         # Override configuration with CLI arguments
         title = args.title or project.get('title', 'Project Timeline')
@@ -166,9 +203,19 @@ Examples:
         else:
             add_branding = config.get('add_branding', False)
 
-        # Use dimensions from CLI or YAML config
-        width = args.width or config.get('width', 1200)
-        height = args.height or config.get('height', 600)
+        # Resolve dimensions: explicit --width/--height win, then
+        # --paper/--orientation presets, then YAML config, then defaults.
+        if args.paper or args.orientation:
+            paper = args.paper or 'a4'
+            orientation = args.orientation or 'landscape'
+            preset_w, preset_h = PAPER_SIZES[(paper, orientation)]
+        else:
+            preset_w, preset_h = None, None
+
+        # Height may stay None: the charter then sizes the chart to the
+        # number of tasks instead of forcing a fixed page.
+        width = args.width or preset_w or config.get('width', 1200)
+        height = args.height or preset_h or config.get('height')
 
         # Initialize charter
         charter = GanttCharter(apply_theme=True)
@@ -183,7 +230,8 @@ Examples:
             palette=palette,
             add_branding=add_branding,
             show_dependencies=config.get('show_dependencies', False),
-            height=height
+            height=height,
+            milestones=milestones
         )
 
         # Determine output filename

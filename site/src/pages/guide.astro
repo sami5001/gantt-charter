@@ -1,0 +1,187 @@
+---
+import Layout from '../layouts/Layout.astro';
+import SiteHeader from '../components/SiteHeader.astro';
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+
+<Layout
+  title="Guide: how Gantt Charter works"
+  description="Full documentation for the Gantt Charter web app: entering tasks, dependencies and milestones, importing CSV, Excel or YAML, choosing palettes and page setup, and exporting vector PDF, SVG or PNG."
+>
+  <SiteHeader current="guide" />
+  <main class="doc">
+    <h1>Guide</h1>
+    <p class="lede">
+      Everything the app can do, in the order you will meet it. The short version: add tasks
+      or import a file, watch the live print preview, export. Nothing is uploaded anywhere.
+    </p>
+
+    <h2>Quick start</h2>
+    <ol>
+      <li>Open the <a href={`${base}/`}>app</a> and either click <strong>Load sample project</strong> or add your first task.</li>
+      <li>Set the title, palette and page under Project, Appearance and Page.</li>
+      <li>Click <strong>Export PDF</strong> (or SVG/PNG). The file matches the preview exactly.</li>
+    </ol>
+    <p>
+      Your work autosaves to this browser's local storage as you type, so you can close the tab
+      and pick up later on the same device. <strong>Clear project</strong> at the bottom of the
+      panel removes everything.
+    </p>
+
+    <h2>Tasks</h2>
+    <p>
+      Each task has a name, a start date, a finish date (inclusive), and optional
+      <strong>Resource</strong> (who does it) and <strong>Phase</strong> (what stage it belongs to)
+      labels. Bars are coloured by resource or phase, whichever you pick under Appearance.
+      A task whose start and finish are the same day renders as a small diamond so it stays visible.
+    </p>
+    <ul>
+      <li>Hover a task row to reveal reorder arrows and the delete button. Chart order is list order.</li>
+      <li>If the finish date is before the start date, the row is flagged and the task is left out of the chart until fixed.</li>
+      <li>New tasks start the day after the previous task finishes and inherit its resource and phase.</li>
+    </ul>
+
+    <h3>Recurring tasks (multiple date ranges)</h3>
+    <p>
+      To show the same piece of work happening more than once — annual reports, recurring
+      workshops, training that repeats each year — add the task again with the same name and
+      different dates. Tasks whose names match exactly share a single chart row, and each entry
+      draws its own bar on that line.
+    </p>
+    <ol>
+      <li>Click <strong>Add task</strong>.</li>
+      <li>Give it exactly the same name as the existing task (capitalisation matters; extra spaces around the name are ignored).</li>
+      <li>Set the new start and finish dates.</li>
+    </ol>
+    <ul>
+      <li>The row appears where the <em>first</em> entry sits in the task list; later entries only add bars.</li>
+      <li>Each entry keeps its own resource and phase, so a recurring task may change colour
+        between occurrences (useful for handovers). Give every entry the same resource for
+        uniform bars.</li>
+      <li>Dependencies attach to the specific entry you set them on, so arrows point at that
+        occurrence's bar.</li>
+      <li>The same rule applies to imports: repeat the task name on several CSV, Excel or YAML
+        rows with different dates.</li>
+    </ul>
+
+    <h3>Dependencies</h3>
+    <p>
+      Use the <strong>+ depends on</strong> control under a task to point at the tasks or
+      milestones (marked ◆) it follows. The chart draws a thin elbow arrow from the end of each
+      predecessor into the start of the dependent task; for a milestone predecessor the arrow
+      runs from the milestone's guide line into the bar. Dependencies are kept when you save to
+      CSV or YAML (as a <code>Dependencies</code> column and a <code>dependencies:</code> list
+      respectively).
+    </p>
+
+    <h2>Milestones</h2>
+    <p>
+      Milestones are single dates that matter: approvals, deadlines, submissions. They appear as
+      diamonds above the chart with a dotted guide line through it, in the same plum colour the
+      Python CLI uses. Labels stack onto as many rows as needed so close milestones never collide.
+    </p>
+
+    <h2>Importing data</h2>
+    <p>
+      <strong>Import CSV, Excel or YAML</strong> accepts three formats. Imports replace the current
+      task list, so save your work first if you need it.
+    </p>
+
+    <h3>CSV and Excel</h3>
+    <p>
+      The first sheet of an Excel workbook is read the same way as a CSV. Download the
+      <strong>CSV template</strong> from the Data section to see the expected shape:
+    </p>
+    <table>
+      <thead>
+        <tr><th>Column</th><th>Required</th><th>Notes</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>Task</code></td><td>yes</td><td>Also accepted: Name, Title</td></tr>
+        <tr><td><code>Start</code></td><td>yes</td><td>Dates in YYYY-MM-DD work best</td></tr>
+        <tr><td><code>Finish</code></td><td>no</td><td>Defaults to Start. Also: End, End date</td></tr>
+        <tr><td><code>Resource</code></td><td>no</td><td>Also: Assignee, Owner, Who</td></tr>
+        <tr><td><code>Phase</code></td><td>no</td><td>Also: Group, Category</td></tr>
+        <tr><td><code>Dependencies</code></td><td>no</td><td>Task names separated by semicolons</td></tr>
+        <tr><td><code>Type</code></td><td>no</td><td>Set to <code>milestone</code> to make a milestone row</td></tr>
+        <tr><td><code>Description</code></td><td>no</td><td>Kept with the data, not drawn on the chart</td></tr>
+      </tbody>
+    </table>
+    <p>Header names are matched case-insensitively. Rows with problems are reported individually and skipped; everything else still imports.</p>
+
+    <h3>YAML</h3>
+    <p>
+      The YAML format is the one the companion
+      <a href="https://github.com/sami5001/gantt-charter" target="_blank" rel="noopener noreferrer">Python CLI</a>
+      reads, so files round-trip between the two tools:
+    </p>
+    <pre><code>project:
+  title: "My Project"
+config:
+  palette: "professional"
+tasks:
+  - name: "Literature review"
+    start: "2026-01-05"
+    finish: "2026-02-13"
+    resource: "Researcher"
+    phase: "Preparation"
+  - name: "Data collection"
+    start: "2026-02-16"
+    finish: "2026-04-10"
+    dependencies: ["Literature review"]
+milestones:
+  - name: "Ethics approval"
+    date: "2026-02-02"</code></pre>
+    <p><strong>Save as CSV</strong> and <strong>Save as YAML</strong> in the Data section export your current project in either format.</p>
+
+    <h2>Appearance</h2>
+    <ul>
+      <li><strong>Colour palette</strong>: twelve palettes drawn from the University of Oxford colour system, identical to the Python package.</li>
+      <li><strong>Colour tasks by</strong>: resource or phase. The legend follows the same grouping.</li>
+      <li><strong>Legend</strong>, <strong>Gridlines</strong> and the <strong>Today marker</strong> (a dashed line at the current date) can each be switched off.</li>
+    </ul>
+
+    <h2>Page setup</h2>
+    <p>
+      Charts are laid out for a real piece of paper: A4 or US Letter, landscape or portrait. The
+      preview shows the page at true proportions, and the time axis adapts to your date range,
+      with week numbers for short projects, then months, quarters and years as the range grows.
+      If the page gets crowded, the app warns you and suggests a roomier setup.
+    </p>
+
+    <h2>Exporting</h2>
+    <table>
+      <thead>
+        <tr><th>Format</th><th>Best for</th><th>Details</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>PDF</code></td><td>Print, theses, reports</td><td>True vector at exact paper size, fonts embedded. Always has a solid page background.</td></tr>
+        <tr><td><code>SVG</code></td><td>Web, further editing</td><td>Standalone vector file with fonts embedded, so it renders identically anywhere.</td></tr>
+        <tr><td><code>PNG</code></td><td>Slides, documents, chat</td><td>Raster at 2×, 3× or 4× resolution.</td></tr>
+      </tbody>
+    </table>
+    <h3>Chart style and transparency</h3>
+    <p>
+      The <strong>Chart style</strong> switch redraws the chart with light ink on a dark page or
+      dark ink on a white page; pick the one that matches where the chart will live. The
+      <strong>Transparent background</strong> toggle removes the page fill from SVG and PNG
+      exports so the chart sits directly on whatever is behind it. Use light style with
+      transparency for light decks, dark style for dark ones. PDFs keep a solid page, because a
+      PDF is a page.
+    </p>
+
+    <h2>Privacy</h2>
+    <p>
+      The app is a static site. Charts are built and exported entirely in your browser; no task
+      data, file or analytics event is sent to any server. The only thing stored is your project,
+      in your own browser's local storage.
+    </p>
+
+    <h2>Something broken or missing?</h2>
+    <p>
+      Please <a href="https://github.com/sami5001/gantt-charter/issues" target="_blank" rel="noopener noreferrer">open an issue</a>
+      or read <a href={`${base}/about/`}>how to contribute</a>.
+    </p>
+  </main>
+</Layout>
