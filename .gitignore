@@ -68,9 +68,10 @@ data/gantt_data.yaml
 data/*_private.yaml
 data/*_personal.yaml
 # Web app (site/)
-site/node_modules/
+node_modules/
 site/dist/
-site/.astro/
+.astro/
+.vite/
 # Re-include site sources that the global Python patterns above would hide
 !site/src/lib/
 !site/**/*.svg
