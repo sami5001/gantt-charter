@@ -76,3 +76,5 @@ site/dist/
 !site/src/lib/
 !site/**/*.svg
 !site/**/*.html
+# Social preview image lives in public/ and must ship with the site
+!site/public/github-social-preview.png
